@@ -39,9 +39,9 @@ function renderMaps() {
     if (overlay) {
       button.textContent = module.name.slice(4);
       if (module.code && module.matched) {
-        const lightness = 30 + pct(module.matched, module.code) * .38;
-        button.style.backgroundColor = `hsl(88 45% ${lightness}%)`;
-        button.style.color = lightness > 50 ? '#172212' : '#e7eddf';
+        const lightness = 26 + pct(module.matched, module.code) * .42;
+        button.style.backgroundColor = `hsl(190 60% ${lightness}%)`;
+        button.style.color = lightness > 50 ? '#08171e' : '#ecf5fa';
       }
     } else {
       button.append(element('span', '', module.name === 'main' ? 'ARM9' : module.name), element('strong', '', module.code ? completion : '—'));

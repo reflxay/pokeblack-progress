@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#111411">
+  <meta name="theme-color" content="#08090c">
   <meta name="description" content="Follow Pokémon Black's matching decompilation: verified code progress, Nintendo DS overlays, and a searchable function explorer.">
   <title>pokeblack · Decompilation progress</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -13,20 +13,35 @@
 <body>
   <a class="skip" href="#main">Skip to content</a>
   <header>
+    <div class="system-strip"><span>NINTENDO DS <span class="system-divider">/</span> UNOVA REGION</span><span>ARM9 <i></i> MATCHING C <i></i> US <span class="battery" aria-hidden="true"></span></span></div>
     <div class="header-inner">
       <a class="brand" href="#"><span class="ball" aria-hidden="true"></span>poke<span>black</span><span class="brand-tag">DECOMP</span></a>
-      <nav aria-label="Main navigation"><a href="#progress">Progress</a><a href="#explorer">Functions</a><a href="#about">About</a></nav>
+      <nav aria-label="Main navigation"><a class="nav-progress" href="#progress"><span>01</span> Progress</a><a class="nav-functions" href="#explorer"><span>02</span> Functions</a><a class="nav-about" href="#about"><span>03</span> About</a></nav>
       <a class="repo-link" href="https://github.com/reflxay/pokeblack-progress">Website source <span aria-hidden="true">↗</span></a>
     </div>
   </header>
   <main id="main">
     <section class="hero" id="progress">
       <div class="eyebrow"><span class="tiny-square"></span> UNOVA, BACK TO SOURCE <span class="edition">NINTENDO DS / BLACK.US</span></div>
-      <div class="hero-heading"><div><h1>Pokémon Black<span>Decompilation progress.</span></h1><p>A byte at a time. Turning the original Nintendo DS game<br class="desktop-break"> into readable C, while keeping every byte in place.</p></div><div class="hero-mark" aria-hidden="true"><span class="ball"></span><span>IRBO</span></div></div>
+      <div class="hero-heading"><div class="hero-copy"><h1><span class="game-label">Pokémon</span><span class="game-title">BLACK</span><span class="game-version">VERSION</span><span class="sr-only">Decompilation progress</span></h1><div class="hero-subtitle"><span class="tiny-square"></span> DECOMPILATION PROJECT</div><p>The same adventure. A new look at the code.<br>Rebuilding Pokémon Black in C, byte for byte.</p><a class="start-link" href="#code-map"><span aria-hidden="true">▶</span> EXPLORE THE PROGRESS</a></div>
+        <div class="hero-mark" aria-hidden="true">
+          <div class="crest-label">UNOVA ARCHIVE <span>GENERATION V</span></div>
+          <svg class="unova-crest" viewBox="0 0 360 260" fill="none">
+            <defs><linearGradient id="silver" x1="180" y1="20" x2="180" y2="235" gradientUnits="userSpaceOnUse"><stop stop-color="#fff"/><stop offset=".45" stop-color="#dee0eb"/><stop offset=".6" stop-color="#989eaf"/><stop offset="1" stop-color="#f0f2f8"/></linearGradient></defs>
+            <g fill="url(#silver)" stroke="#6b7080" stroke-width="1"><path d="M152 108 114 60 8 46 74 91 124 105 29 96 98 129 143 132Z"/><path d="M142 132 85 128 44 143 115 157 151 145Z"/><path d="M151 145 111 158 82 184 145 172 164 155Z"/><path d="M208 108 246 60 352 46 286 91 236 105 331 96 262 129 217 132Z"/><path d="M218 132 275 128 316 143 245 157 209 145Z"/><path d="M209 145 249 158 278 184 215 172 196 155Z"/></g>
+            <circle cx="180" cy="128" r="86" stroke="#3d414d" stroke-dasharray="2 7"/><path d="m180 37 12 15h-24l12-15ZM180 218l-12-15h24l-12 15Z" fill="#a2a6b6"/>
+            <circle cx="180" cy="128" r="55" fill="#0b0d12" stroke="url(#silver)" stroke-width="5"/><path d="M128 118a53 53 0 0 1 104 0Z" fill="url(#silver)"/><path d="M128 138h104" stroke="#acb0bd" stroke-width="3"/><circle cx="180" cy="128" r="17" fill="#0b0d12" stroke="url(#silver)" stroke-width="4"/><circle cx="180" cy="128" r="7" fill="#65d9ed"/>
+            <path d="M157 229h46M164 236h32" stroke="#737987" stroke-width="2"/>
+          </svg>
+          <div class="crest-caption"><span>IRBO</span><span>BLACK VERSION / US</span></div>
+        </div>
+      </div>
+      <div class="progress-console">
+      <div class="console-top"><span><span class="ball" aria-hidden="true"></span> DECOMPILATION STATUS</span><span>ARM9 / AUTOLOADS / OVERLAYS</span></div>
       <div class="snapshot"><span class="live-dot"></span><span id="verification">Loading verified snapshot…</span><span class="snapshot-date" id="snapshot-date"></span></div>
       <p class="error" id="error" role="alert" hidden></p>
       <div class="progress-heading"><div><span class="metric-label">MATCHING C CODE</span><div class="big-number"><span id="overall">—</span><span>%</span></div></div><div class="progress-caption"><strong id="byte-caption">Reading progress data…</strong><span>of tracked code bytes reconstructed in C</span></div></div>
-      <progress id="overall-bar" value="0" max="100" aria-label="Overall matching C code progress"></progress>
+      <div class="hp-bar"><span aria-hidden="true">CODE</span><progress id="overall-bar" value="0" max="100" aria-label="Overall matching C code progress"></progress></div>
       <div class="scale" aria-hidden="true"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div>
       <div class="stats">
         <div><span class="metric-label">MATCHING FUNCTIONS</span><strong id="matched-functions">—</strong><span id="function-caption">of tracked named functions</span></div>
@@ -34,9 +49,10 @@
         <div><span class="metric-label">OVERLAY CODE</span><strong id="overlay-percent">—</strong><span id="overlay-caption">Loadable game modules</span></div>
         <div><span class="metric-label">ROM RECONSTRUCTION</span><strong class="match" id="rom-status">—</strong><span id="rom-caption">Original ROM comparison</span></div>
       </div>
+      </div>
     </section>
 
-    <section class="map-section" aria-labelledby="map-title">
+    <section class="map-section" id="code-map" aria-labelledby="map-title">
       <div class="section-title"><div><span class="section-number">01 / THE BIG PICTURE</span><h2 id="map-title">Explore the code.</h2></div><div class="legend"><span><i class="legend-remaining"></i>Assembly</span><span><i class="legend-partial"></i>Some C</span><span><i class="legend-done"></i>Matching C</span><span><i class="legend-empty"></i>No tracked code</span></div></div>
       <div class="map-layout"><div class="map-main"><div class="map-label"><h3>ARM9 &amp; autoloads</h3><span>ALWAYS-RESIDENT CODE</span></div><div id="core-map" class="core-map"></div><div class="map-label overlays-label"><h3>Overlays</h3><span>SELECT A MODULE TO EXPLORE</span></div><div class="heatmap" id="overlay-map" aria-label="Overlay code progress"></div><p class="map-note">Each tile is one overlay. Its color reflects the share of tracked code written in matching C.</p></div>
       <aside class="module-detail" id="module-detail" aria-live="polite"><span class="metric-label">SELECTED MODULE</span><h3 id="module-title">ARM9 main</h3><strong class="module-percent" id="module-percent">—</strong><progress id="module-bar" value="0" max="100" aria-label="Selected module matching C progress"></progress><dl><div><dt>Matching C</dt><dd id="module-bytes">—</dd></div><div><dt>Tracked code</dt><dd id="module-total">—</dd></div><div><dt>Matching functions</dt><dd id="module-functions">—</dd></div></dl><button class="primary-button" id="explore-module" type="button">Browse this module <span aria-hidden="true">→</span></button><p>Overlays let the DS load different parts of the game into the same memory. Progress here tracks them separately.</p></aside></div>
