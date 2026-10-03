@@ -10,7 +10,7 @@ Inspired by [BFBB's progress site](https://bfbbdecomp.github.io/bfbb/). The impl
 python -m http.server 8000 --bind 127.0.0.1
 ```
 
-Open http://127.0.0.1:8000. No package installation or frontend build is needed. Fonts use Google Fonts with local system fallbacks.
+Open http://127.0.0.1:8000. No package installation or frontend build is needed. Fonts are self-hosted: Korataki Bold for the title and the supplied Pokémon Black/White text font for the interface, with system fallbacks for source symbols and addresses.
 
 ## Automatic updates on Windows
 
