@@ -12,7 +12,35 @@ python -m http.server 8000 --bind 127.0.0.1
 
 Open http://127.0.0.1:8000. No package installation or frontend build is needed. Fonts use Google Fonts with local system fallbacks.
 
-## Update progress
+## Automatic updates on Windows
+
+The local updater checks for new verified main builds every five minutes using Windows Task Scheduler. The PC must be on and the installing user signed in; Codex does not need to stay open. GitHub Pages deploys each published snapshot.
+
+From this website directory, install the task using a native Python's windowless executable:
+
+```powershell
+.\tools\install_auto_update.ps1 -Python 'C:\path\to\pythonw.exe'
+```
+
+The default source checkout is the sibling `pokeblack-integration` folder. Override it with `-Repo` when needed. Keep objdiff v3.8.0 at `.cache/objdiff-cli.exe` and use the existing Git sign-in for both repositories. No new token or password is stored by this updater.
+
+The task waits for a clean integration checkout, a successful integration receipt naming the exact main revision, and publication of that revision to private origin. It rechecks the ARM9, ARM7 and full-ROM hashes, exports metadata, commits only `data/progress.json`, and pushes to this website's main branch. Unfinished edits and unchanged revisions are skipped. Failed snapshot pushes are retried without rewriting commits; unrelated local website commits require manual publication.
+
+The task is named `pokeblack progress updater`. Its last-run output is saved in the ignored `.cache/auto-update.log`. Pause or resume it in Task Scheduler, or use:
+
+```powershell
+Disable-ScheduledTask -TaskName 'pokeblack progress updater'
+Enable-ScheduledTask -TaskName 'pokeblack progress updater'
+```
+
+Run these checks when changing the updater:
+
+```powershell
+python tools/test_auto_update.py
+python tools/export_progress.py --check
+```
+
+## Manual updates
 
 At a clean integration boundary, run the decompilation's full `make compare` and record the successful main revision in its integration receipt. Use the existing toolchain and build instructions in that private repository. Never export a dirty worker checkout.
 
@@ -27,7 +55,7 @@ git commit -m "Update verified decompilation progress"
 git push origin main
 ```
 
-GitHub Pages rebuilds after a push to this site's main branch. The private decompilation repo is not accessed by the browser or the public website workflow. Snapshot updates are intentionally published from verified local builds; a private source token is not stored in this repository.
+GitHub Pages rebuilds after a push to this site's main branch. The private decompilation repo is not accessed by the browser or the public website workflow. Snapshots are published from verified local builds; a private source token is not stored in this repository.
 
 ## Metrics
 

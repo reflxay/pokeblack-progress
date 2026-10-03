@@ -3,6 +3,7 @@ import argparse
 import hashlib
 import io
 import json
+import os
 import re
 import subprocess
 import struct
@@ -10,9 +11,21 @@ import tarfile
 from datetime import datetime, timezone
 from pathlib import Path
 
+PROCESS_FLAGS = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
+MATCH_LINES = ("main.sbin matches black.us/main.sha1", "arm7.sbin matches arm7.sha1",
+               "ROM matches black.us/rom.sha1")
+
 
 def git(repo, *args):
-    return subprocess.check_output(["git", "-C", str(repo), *args])
+    return subprocess.check_output(["git", "-C", str(repo), *args],
+        stderr=subprocess.STDOUT, timeout=60, creationflags=PROCESS_FLAGS,
+        env={**os.environ, "GIT_TERMINAL_PROMPT": "0", "GCM_INTERACTIVE": "never"})
+
+
+def receipt_verifies(proof, revision):
+    # A base or worker SHA appearing in a receipt is not its verified main SHA.
+    recorded = re.search(r"(?m)^\s*(?:integrated_commit|verified_main|main_sha|main_commit):\s*([0-9a-f]{40})\s*$", proof)
+    return bool(recorded and recorded[1] == revision and all(line in proof for line in MATCH_LINES))
 
 
 def sha1(path):
@@ -38,9 +51,7 @@ def export(repo, objdiff, output, receipt):
     if revision != git(repo, "rev-parse", "main").decode().strip():
         raise ValueError("Snapshot must be the verified main revision.")
     proof = receipt.read_text()
-    if revision not in proof or not all(line in proof for line in (
-        "main.sbin matches black.us/main.sha1", "arm7.sbin matches arm7.sha1",
-        "ROM matches black.us/rom.sha1")):
+    if not receipt_verifies(proof, revision):
         raise ValueError("Provide the successful integration receipt for this main revision.")
     build = repo / "build/black.us"
     expected_main = (repo / "black.us/main.sha1").read_text().split()[0]
@@ -88,7 +99,8 @@ def export(repo, objdiff, output, receipt):
     (cache / "objdiff.json").write_text(json.dumps({"min_version": "2.0.0",
         "build_target": False, "build_base": False, "units": units}), encoding="utf-8")
     subprocess.run([str(objdiff), "report", "generate", "-p", str(cache),
-                    "-o", str(cache / "report.json")], check=True)
+                    "-o", str(cache / "report.json")], check=True, timeout=90,
+                    creationflags=PROCESS_FLAGS, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     report = json.loads((cache / "report.json").read_text())
     # Only count emitted functions. This excludes force-export helpers discarded by the linker.
     emitted, module = {}, None
@@ -172,6 +184,10 @@ if __name__ == "__main__":
         assert assembly_names("\tthumb_func_start FUN_A\n\tarm_func_start FUN_B") == ["FUN_A", "FUN_B"]
         assert has_assembly("asm void f(void) {}") and has_assembly("void f() { asm { } }")
         assert not has_assembly("void f(void) { return; }")
+        proof = "integrated_commit: " + "a" * 40 + "\nbase_main: " + "b" * 40 + "\n" + "\n".join(MATCH_LINES)
+        assert receipt_verifies(proof, "a" * 40)
+        assert not receipt_verifies(proof, "b" * 40)
+        assert not receipt_verifies(proof.replace(MATCH_LINES[-1], "ROM mismatch"), "a" * 40)
         validate(json.loads(args.output.read_text()))
         print("Snapshot checks passed")
     else:
