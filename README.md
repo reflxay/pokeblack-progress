@@ -2,7 +2,7 @@
 
 Public progress showcase for the private Pokémon Black matching decompilation. Plain HTML, CSS and JavaScript, hosted for free on GitHub Pages at https://reflxay.github.io/pokeblack-progress/.
 
-Inspired by [BFBB's progress site](https://bfbbdecomp.github.io/bfbb/). The implementation and artwork here are original; no BFBB source or assets are copied.
+Inspired by [BFBB's progress site](https://bfbbdecomp.github.io/bfbb/). The layout and interface are original; no BFBB source or assets are copied. The main title uses Korataki Bold with vector outlines and metallic gradients inspired by Pokémon Black's logo.
 
 ## Preview
 
@@ -10,7 +10,9 @@ Inspired by [BFBB's progress site](https://bfbbdecomp.github.io/bfbb/). The impl
 python -m http.server 8000 --bind 127.0.0.1
 ```
 
-Open http://127.0.0.1:8000. No package installation or frontend build is needed. Fonts are self-hosted: Korataki Bold for the title and the supplied Pokémon Black/White text font for the interface, with system fallbacks for source symbols and addresses.
+Open http://127.0.0.1:8000. No package installation or frontend build is needed. Fonts are self-hosted: Korataki Bold for both title treatments and the supplied Pokémon Black/White text font for the interface, with system fallbacks for source symbols and addresses. The main title is font-based SVG with layered borders and a dark metallic face, without a bitmap logo.
+
+The main page uses a Pokémon Black 1 battle-menu theme with rectangular panels and buttons, checkered interiors, and layered borders. The previous Black 2-inspired design is preserved at `black2.html` with its own `black2.css`. Click the small Poké Ball at the far right of either page's footer to switch designs. Both pages share the same live progress snapshot and function explorer.
 
 ## Automatic updates on Windows
 
@@ -24,7 +26,7 @@ From this website directory, install the task using a native Python's windowless
 
 The default source checkout is the sibling `pokeblack-integration` folder. Override it with `-Repo` when needed. Keep objdiff v3.8.0 at `.cache/objdiff-cli.exe` and use the existing Git sign-in for both repositories. No new token or password is stored by this updater.
 
-The task waits for a clean integration checkout, a successful integration receipt naming the exact main revision, and publication of that revision to private origin. It rechecks the ARM9, ARM7 and full-ROM hashes, exports metadata, commits only `data/progress.json`, and pushes to this website's main branch. Unfinished edits and unchanged revisions are skipped. Failed snapshot pushes are retried without rewriting commits; unrelated local website commits require manual publication.
+The task waits for a clean integration checkout, a successful integration receipt naming the exact main revision, and publication of that revision to private origin. Receipts can include the comparison results directly or reference their saved comparison log. It rechecks the ARM9, ARM7 and full-ROM hashes, exports metadata, commits only `data/progress.json`, and pushes to this website's main branch. Unfinished edits and unchanged revisions are skipped. Failed snapshot pushes are retried without rewriting commits; unrelated local website commits require manual publication.
 
 The task is named `pokeblack progress updater`. Its last-run output is saved in the ignored `.cache/auto-update.log`. Pause or resume it in Task Scheduler, or use:
 
@@ -65,4 +67,4 @@ Named-function counts use original emitted assembly function labels and emitted 
 
 Export requires a successful integration receipt for the exact clean main revision and independently checks ARM9, ARM7 embedded in the final ROM, and the whole ROM against the repository's reference hashes. The exporter never modifies the decompilation checkout. Its local object configuration, tools and reports stay in the ignored `.cache/` directory.
 
-Only `data/progress.json` contains project-specific public metadata: symbol names, source filenames, module names, addresses, byte counts, the main commit identifier and hash-check results. No private source, ROM, game assets, SDK, compiler, credentials, personal paths or raw logs are published.
+Only `data/progress.json` contains project-specific public metadata: symbol names, source filenames, module names, addresses, byte counts, the main commit identifier and hash-check results. No private source, ROM, extracted game assets, SDK, compiler, credentials, personal paths or raw logs are published.

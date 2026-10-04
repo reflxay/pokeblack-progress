@@ -7,7 +7,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from export_progress import export, git, receipt_verifies, validate
+from export_progress import export, git, read_receipt, receipt_verifies, validate
 
 SITE = Path(__file__).resolve().parents[1]
 SNAPSHOT = "data/progress.json"
@@ -16,7 +16,7 @@ COMMIT_PREFIX = "Update verified decompilation progress"
 
 def receipt_for(store, revision):
     for path in sorted(store.glob("tasks/*/integration.md"), reverse=True):
-        if receipt_verifies(path.read_text(encoding="utf-8"), revision):
+        if receipt_verifies(read_receipt(path), revision):
             return path
     return None
 

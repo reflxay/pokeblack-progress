@@ -28,6 +28,21 @@ def receipt_verifies(proof, revision):
     return bool(recorded and recorded[1] == revision and all(line in proof for line in MATCH_LINES))
 
 
+def read_receipt(path):
+    proof = path.read_text(encoding="utf-8")
+    log = re.search(r"(?m)^\s*compare_log:\s*(.+?)\s*$", proof)
+    if log and not all(line in proof for line in MATCH_LINES):
+        compare_log = Path(log[1])
+        if not compare_log.is_absolute():
+            compare_log = path.parent / compare_log
+        if not compare_log.is_file():
+            # A moved checkout may retain a copy beside the receipt.
+            compare_log = path.parent / compare_log.name
+        if compare_log.is_file():
+            proof += "\n" + compare_log.read_text(encoding="utf-8", errors="replace")
+    return proof
+
+
 def sha1(path):
     digest = hashlib.sha1()
     with path.open("rb") as stream:
@@ -50,7 +65,7 @@ def export(repo, objdiff, output, receipt):
         raise ValueError("Use a clean verified checkout; preserve worker edits.")
     if revision != git(repo, "rev-parse", "main").decode().strip():
         raise ValueError("Snapshot must be the verified main revision.")
-    proof = receipt.read_text()
+    proof = read_receipt(receipt)
     if not receipt_verifies(proof, revision):
         raise ValueError("Provide the successful integration receipt for this main revision.")
     build = repo / "build/black.us"

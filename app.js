@@ -13,6 +13,24 @@ function element(tag, className, text) {
 let data, selectedModule = 'main', page = 0, filtered = [];
 const pageSize = 40;
 
+const autoHideHeader = document.querySelector('.auto-hide-header');
+if (autoHideHeader) {
+  let lastScrollY = Math.max(0, window.scrollY);
+  let pointerNearHeader = false;
+  window.addEventListener('scroll', () => {
+    const currentY = Math.max(0, window.scrollY);
+    const nearTop = currentY <= autoHideHeader.offsetHeight;
+    if (!nearTop && Math.abs(currentY - lastScrollY) < 6) return;
+    autoHideHeader.classList.toggle('is-hidden', !nearTop && currentY > lastScrollY && !pointerNearHeader && !autoHideHeader.querySelector(':focus-visible'));
+    lastScrollY = currentY;
+  }, {passive: true});
+  window.addEventListener('pointermove', event => {
+    pointerNearHeader = event.pointerType === 'mouse' && event.clientY <= autoHideHeader.offsetHeight;
+    if (pointerNearHeader) autoHideHeader.classList.remove('is-hidden');
+  }, {passive: true});
+  autoHideHeader.addEventListener('focusin', () => autoHideHeader.classList.remove('is-hidden'));
+}
+
 function selectModule(name) {
   selectedModule = name;
   const module = data.modules.find(m => m.name === name);
@@ -26,6 +44,7 @@ function selectModule(name) {
 }
 
 function renderMaps() {
+  const progressColor = getComputedStyle(document.documentElement).getPropertyValue('--progress-color').trim();
   for (const module of data.modules) {
     const overlay = module.name.startsWith('OVY_');
     const button = element('button', overlay ? '' : 'core-tile');
@@ -40,7 +59,9 @@ function renderMaps() {
       button.textContent = module.name.slice(4);
       if (module.code && module.matched) {
         const lightness = 26 + pct(module.matched, module.code) * .42;
-        button.style.backgroundColor = `hsl(190 60% ${lightness}%)`;
+        button.style.backgroundColor = progressColor
+          ? `color-mix(in srgb, ${progressColor} ${pct(module.matched, module.code)}%, #2b2d32)`
+          : `hsl(var(--progress-hue, 190) 60% ${lightness}%)`;
         button.style.color = lightness > 50 ? '#08171e' : '#ecf5fa';
       }
     } else {
@@ -121,7 +142,7 @@ $('explore-module').addEventListener('click', () => {
   $('search').focus({preventScroll: true});
 });
 
-fetch('data/progress.json').then(response => {
+fetch('data/progress.json', {cache: 'no-cache'}).then(response => {
   if (!response.ok) throw new Error('Progress snapshot could not be loaded.');
   return response.json();
 }).then(snapshot => {
@@ -139,8 +160,10 @@ fetch('data/progress.json').then(response => {
   $('overlay-percent').textContent = percent(overlays.reduce((n, m) => n + m.matched, 0), overlays.reduce((n, m) => n + m.code, 0));
   $('overlay-caption').textContent = `${overlays.length} loadable modules`;
   const verified = ['arm9', 'arm7', 'rom'].every(key => data.verified?.[key] === true);
-  $('rom-status').textContent = verified ? 'BYTE-FOR-BYTE' : 'UNVERIFIED';
-  $('rom-caption').textContent = verified ? 'ARM9, ARM7 & full ROM match' : 'Verification unavailable';
+  if ($('rom-status')) {
+    $('rom-status').textContent = verified ? 'BYTE-FOR-BYTE' : 'UNVERIFIED';
+    $('rom-caption').textContent = verified ? 'ARM9, ARM7 & full ROM match' : 'Verification unavailable';
+  }
   $('verification').textContent = `${verified ? 'Verified' : 'Unverified'} main · ${data.revision.slice(0, 8)}`;
   $('snapshot-date').textContent = `SNAPSHOT ${new Date(data.updated).toLocaleDateString('en-US', {month: 'short', day: '2-digit', year: 'numeric', timeZone: 'America/Toronto'}).toUpperCase()}`;
   renderMaps();

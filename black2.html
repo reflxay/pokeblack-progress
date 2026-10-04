@@ -5,20 +5,21 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#08090c">
   <meta name="description" content="Follow Pokémon Black's matching decompilation: verified code progress, Nintendo DS overlays, and a searchable function explorer.">
-  <title>pokeblack · Decompilation progress</title>
+  <title>pokeblack · Black 2 style archive</title>
   <link rel="icon" href="favicon.svg?v=2" type="image/svg+xml">
-  <link rel="stylesheet" href="style.css?v=30">
+  <link rel="stylesheet" href="black2.css?v=3">
   <link rel="preload" href="assets/fonts/korataki-bold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/pokemon-bw-text.woff2" as="font" type="font/woff2" crossorigin>
   <script src="app.js?v=7" defer></script>
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
-  <header class="auto-hide-header">
-    <div class="system-strip">
-      <a class="system-brand" href="#">pokeblack</a>
-      <nav aria-label="Main navigation"><a class="nav-progress" href="#code-map">Progress</a><a class="nav-functions" href="#explorer">Functions</a><a class="nav-about" href="#about">About</a></nav>
-      <span class="battery" aria-hidden="true"></span>
+  <header>
+    <div class="system-strip"><span>NINTENDO DS <span class="system-divider">/</span> UNOVA REGION</span><span>ARM9 <i></i> MATCHING C <i></i> US <span class="battery" aria-hidden="true"></span></span></div>
+    <div class="header-inner">
+      <a class="brand" href="#"><span class="ball" aria-hidden="true"></span>poke<span>black</span><span class="brand-tag">DECOMP</span></a>
+      <nav aria-label="Main navigation"><a class="nav-progress" href="#progress"><span>01</span> Progress</a><a class="nav-functions" href="#explorer"><span>02</span> Functions</a><a class="nav-about" href="#about"><span>03</span> About</a></nav>
+      <a class="repo-link" href="https://github.com/reflxay/pokeblack-progress">Website source <span aria-hidden="true">↗</span></a>
     </div>
   </header>
   <main id="main">
@@ -47,7 +48,7 @@
       </h1><div class="hero-subtitle"><span class="tiny-square"></span> DECOMPILATION PROJECT</div><p>Rebuilding Pokémon Black in C, byte for byte.</p></div>
       </div>
       <div class="progress-console">
-      <div class="console-top"><span><svg class="status-ball" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#f3f5fa"/><path d="M2 12a10 10 0 0 1 20 0Z" fill="var(--accent)"/><path d="M2 12h20" stroke="#1b222e" stroke-width="2"/><circle cx="12" cy="12" r="3.5" fill="#f3f5fa" stroke="#1b222e" stroke-width="2"/><circle cx="12" cy="12" r="10" fill="none" stroke="#f3f5fa" stroke-width="1.3"/></svg> DECOMPILATION STATUS</span><span>ARM9 / AUTOLOADS / OVERLAYS</span></div>
+      <div class="console-top"><span><svg class="status-ball" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#f3f5fa"/><path d="M2 12a10 10 0 0 1 20 0Z" fill="#ed263b"/><path d="M2 12h20" stroke="#1b222e" stroke-width="2"/><circle cx="12" cy="12" r="3.5" fill="#f3f5fa" stroke="#1b222e" stroke-width="2"/><circle cx="12" cy="12" r="10" fill="none" stroke="#f3f5fa" stroke-width="1.3"/></svg> DECOMPILATION STATUS</span><span>ARM9 / AUTOLOADS / OVERLAYS</span></div>
       <div class="snapshot"><span class="live-dot"></span><span id="verification">Loading verified snapshot…</span><span class="snapshot-date" id="snapshot-date"></span></div>
       <p class="error" id="error" role="alert" hidden></p>
       <div class="code-status"><div class="code-nameplate"><span>MATCHING C CODE</span><span>ARM9 + OVERLAYS</span></div><div class="progress-heading"><div class="big-number"><span id="overall">—</span><span>%</span></div><div class="progress-caption"><strong id="byte-caption">Reading progress data…</strong><span>of tracked code bytes reconstructed in C</span></div></div>
@@ -65,7 +66,7 @@
     <section class="map-section" id="code-map" aria-labelledby="map-title">
       <div class="section-title"><div><span class="section-number">01 / THE BIG PICTURE</span><h2 id="map-title">Explore the code.</h2></div><div class="legend"><span><i class="legend-remaining"></i>Assembly</span><span><i class="legend-partial"></i>Some C</span><span><i class="legend-done"></i>Matching C</span><span><i class="legend-empty"></i>No tracked code</span></div></div>
       <div class="map-layout"><div class="map-main"><div class="map-label"><h3>ARM9 &amp; autoloads</h3><span>ALWAYS-RESIDENT CODE</span></div><div id="core-map" class="core-map"></div><div class="map-label overlays-label"><h3>Overlays</h3><span>SELECT A MODULE TO EXPLORE</span></div><div class="heatmap" id="overlay-map" aria-label="Overlay code progress"></div><p class="map-note">Each tile is one overlay. Its color reflects the share of tracked code written in matching C.</p></div>
-      <aside class="module-detail" id="module-detail" aria-live="polite"><div class="module-nameplate"><span class="metric-label">SELECTED MODULE</span><h3 id="module-title">ARM9 main</h3></div><strong class="module-percent" id="module-percent">—</strong><div class="module-exp"><span class="exp-track"><progress id="module-bar" value="0" max="100" aria-label="Selected module matching C progress"></progress></span></div><dl><div><dt>Matching C</dt><dd id="module-bytes">—</dd></div><div><dt>Tracked code</dt><dd id="module-total">—</dd></div><div><dt>Matching functions</dt><dd id="module-functions">—</dd></div></dl><button class="primary-button menu-frame" id="explore-module" type="button">Browse this module <span aria-hidden="true">→</span></button><p>Overlays let the DS load different parts of the game into the same memory. Progress here tracks them separately.</p></aside></div>
+      <aside class="module-detail" id="module-detail" aria-live="polite"><span class="metric-label">SELECTED MODULE</span><h3 id="module-title">ARM9 main</h3><strong class="module-percent" id="module-percent">—</strong><progress id="module-bar" value="0" max="100" aria-label="Selected module matching C progress"></progress><dl><div><dt>Matching C</dt><dd id="module-bytes">—</dd></div><div><dt>Tracked code</dt><dd id="module-total">—</dd></div><div><dt>Matching functions</dt><dd id="module-functions">—</dd></div></dl><button class="primary-button" id="explore-module" type="button">Browse this module <span aria-hidden="true">→</span></button><p>Overlays let the DS load different parts of the game into the same memory. Progress here tracks them separately.</p></aside></div>
     </section>
 
     <section id="explorer" aria-labelledby="explorer-title">
@@ -76,9 +77,9 @@
       <details class="function-detail" id="function-detail"><summary>Selected function details</summary><dl id="function-info"></dl><p>Source stays in the private decompilation mirror. This public site contains progress metadata only.</p></details>
     </section>
 
-    <section id="about" class="about" aria-labelledby="about-title"><div><span class="section-number">03 / THE PROJECT</span><h2 id="about-title">Same game.<br>Readable source.</h2></div><div class="about-copy"><p>pokeblack is a matching decompilation of Pokémon Black for Nintendo DS. The goal is to replace assembly with understandable C while rebuilding the original US ROM byte for byte.</p><p>The ROM already matches. Decompilation measures how much of its tracked code has been rewritten in C; these are separate milestones.</p><details><summary>How the numbers are calculated</summary><p>Code progress uses objdiff v3.8.0 function-sized code bytes from linked ARM9, autoload, and overlay objects. Embedded literal pools can be included in assembly code ranges. Discarded linker helpers, data-only regions, ARM7, and game assets are excluded from this code percentage.</p><p>Function totals combine emitted named assembly function labels with emitted C functions. Compiler-generated assembly wrappers are excluded, and inline assembly does not count as matching C. Assembly function sizes are shown as a dash because their labels do not provide reliable byte sizes.</p><p>Each snapshot records a verified main revision. Export requires its successful integration receipt and rechecks ARM9, ARM7, and the full ROM hashes. Updates are published when a new verified snapshot is committed.</p></details><p class="about-small">An independent fan reverse-engineering project. Not affiliated with Nintendo, Game Freak, or The Pokémon Company. No ROMs, compiler, SDK, or private source code are distributed here.</p></div></section>
+    <section id="about" class="about" aria-labelledby="about-title"><div><span class="section-number">03 / THE PROJECT</span><h2 id="about-title">Same game.<br>Readable source.</h2></div><div class="about-copy"><p>pokeblack is a matching decompilation of Pokémon Black for Nintendo DS. The goal is to replace assembly with understandable C while rebuilding the original US ROM byte for byte.</p><p>The ROM already matches. Decompilation measures how much of its tracked code has been rewritten in C; these are separate milestones.</p><details><summary>How the numbers are calculated</summary><p>Code progress uses objdiff v3.8.0 function-sized code bytes from linked ARM9, autoload, and overlay objects. Embedded literal pools can be included in assembly code ranges. Discarded linker helpers, data-only regions, ARM7, and game assets are excluded from this code percentage.</p><p>Function totals combine emitted named assembly function labels with emitted C functions. Compiler-generated assembly wrappers are excluded, and inline assembly does not count as matching C. Assembly function sizes are shown as a dash because their labels do not provide reliable byte sizes.</p><p>Each snapshot records a verified main revision. Export requires its successful integration receipt and rechecks ARM9, ARM7, and the full ROM hashes. Updates are published when a new verified snapshot is committed.</p></details><p class="about-small">An independent fan reverse-engineering project. Not affiliated with Nintendo, Game Freak, or The Pokémon Company. No ROMs, game assets, compiler, SDK, or private source code are distributed here.</p></div></section>
     <noscript><p class="error">Enable JavaScript to browse the progress snapshot, or download <a href="data/progress.json">the progress JSON</a>.</p></noscript>
   </main>
-  <footer><a class="brand" href="#">pokeblack</a><span>NINTENDO DS · POKÉMON BLACK · US</span><a href="data/progress.json">Progress data ↗</a><a href="https://github.com/reflxay/pokeblack-progress">GitHub ↗</a><a class="theme-switch" href="black2.html" aria-label="Switch to the Black 2 design" title="Switch to the Black 2 design"><span class="ball" aria-hidden="true"></span></a></footer>
+  <footer><a class="brand" href="#">pokeblack</a><span>NINTENDO DS · POKÉMON BLACK · US</span><a href="data/progress.json">Progress data ↗</a><a href="https://github.com/reflxay/pokeblack-progress">GitHub ↗</a><a class="theme-switch" href="./" aria-label="Switch to the Black 1 design" title="Switch to the Black 1 design"><span class="ball" aria-hidden="true"></span></a></footer>
 </body>
 </html>

@@ -16,6 +16,21 @@ with tempfile.TemporaryDirectory() as directory:
     assert receipt_for(root, "b" * 40) is None
     receipt.write_text(receipt.read_text().replace(MATCH_LINES[-1], "ROM mismatch"))
     assert receipt_for(root, "a" * 40) is None
+    compare_log = receipt.parent / "integration-compare.log"
+    receipt.write_text("verified_main: " + "a" * 40 + "\ncompare_log: " +
+                       str(root / "old-checkout" / compare_log.name) + "\n")
+    assert receipt_for(root, "a" * 40) is None
+    compare_log.write_text("\n".join(MATCH_LINES))
+    assert receipt_for(root, "a" * 40) == receipt
+    assert receipt_for(root, "b" * 40) is None
+    compare_log.write_text("\n".join(MATCH_LINES[:-1]) + "\nROM mismatch")
+    assert receipt_for(root, "a" * 40) is None
+    shared_log = root / "integration-compare.log"
+    shared_log.write_text("\n".join(MATCH_LINES))
+    receipt.write_text("verified_main: " + "a" * 40 + "\ncompare_log: " + str(shared_log) + "\n")
+    assert receipt_for(root, "a" * 40) == receipt
+    shared_log.write_text("\n".join(MATCH_LINES[:-1]) + "\nROM mismatch")
+    assert receipt_for(root, "a" * 40) is None
     site = root / "site"
     site.mkdir()
     git(site, "init", "-b", "main")
