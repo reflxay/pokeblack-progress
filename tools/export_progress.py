@@ -28,18 +28,24 @@ def receipt_verifies(proof, revision):
     return bool(recorded and recorded[1] == revision and all(line in proof for line in MATCH_LINES))
 
 
-def read_receipt(path):
+def is_trusted_main(revision, expected_revision, ref):
+    return revision == expected_revision and ref == "refs/heads/main"
+
+
+def read_receipt(path, repo=None):
     proof = path.read_text(encoding="utf-8")
-    log = re.search(r"(?m)^\s*compare_log:\s*(.+?)\s*$", proof)
-    if log and not all(line in proof for line in MATCH_LINES):
-        compare_log = Path(log[1])
-        if not compare_log.is_absolute():
-            compare_log = path.parent / compare_log
-        if not compare_log.is_file():
-            # A moved checkout may retain a copy beside the receipt.
-            compare_log = path.parent / compare_log.name
-        if compare_log.is_file():
-            proof += "\n" + compare_log.read_text(encoding="utf-8", errors="replace")
+    logs = re.findall(r"(?m)^\s*compare_log:\s*(.+?)\s*$", proof)
+    logs += re.findall(r"(?m)^\s*-\s*(.+\.log)\s*$", proof)
+    for value in dict.fromkeys(logs):
+        compare_log = Path(value)
+        candidates = [compare_log] if compare_log.is_absolute() else []
+        if repo is not None:
+            candidates.append(repo / compare_log)
+        candidates.extend((path.parent / compare_log, path.parent / compare_log.name))
+        for candidate in candidates:
+            if candidate.is_file():
+                proof += "\n" + candidate.read_text(encoding="utf-8", errors="replace")
+                break
     return proof
 
 
@@ -59,29 +65,43 @@ def has_assembly(text):
     return bool(re.search(r"\bGLOBAL_ASM\s*\(|\basm\s*(?:\{|\w+\s+\w+\s*\()|\b__asm\b", text))
 
 
-def export(repo, objdiff, output, receipt):
+def export(repo, objdiff, output, receipt=None, trusted_main=None):
     revision = git(repo, "rev-parse", "HEAD").decode().strip()
-    if git(repo, "status", "--porcelain").strip():
+    status_args = ("status", "--porcelain", "--untracked-files=no") if trusted_main else ("status", "--porcelain")
+    if git(repo, *status_args).strip():
         raise ValueError("Use a clean verified checkout; preserve worker edits.")
-    if revision != git(repo, "rev-parse", "main").decode().strip():
-        raise ValueError("Snapshot must be the verified main revision.")
-    proof = read_receipt(receipt)
-    if not receipt_verifies(proof, revision):
-        raise ValueError("Provide the successful integration receipt for this main revision.")
+    if trusted_main:
+        if not is_trusted_main(revision, trusted_main, os.environ.get("GITHUB_REF")):
+            raise ValueError("GitHub progress export must run for the exact main branch commit.")
+    else:
+        if revision != git(repo, "rev-parse", "main").decode().strip():
+            raise ValueError("Snapshot must be the verified main revision.")
+        proof = read_receipt(receipt, repo)
+        if not receipt_verifies(proof, revision):
+            raise ValueError("Provide the successful integration receipt for this main revision.")
     build = repo / "build/black.us"
     expected_main = (repo / "black.us/main.sha1").read_text().split()[0]
-    expected_rom = (repo / "black.us/rom.sha1").read_text().split()[0]
-    expected_arm7 = (repo / "sub/arm7.sha1").read_text().split()[0]
-    with (build / "pokeblack.us.nds").open("rb") as rom:
-        header = rom.read(0x40)
-        offset, size = struct.unpack_from("<I", header, 0x30)[0], struct.unpack_from("<I", header, 0x3C)[0]
-        rom.seek(offset)
-        arm7_hash = hashlib.sha1(rom.read(size)).hexdigest()
-    checks = {
-        "arm9": sha1(build / "main.sbin") == expected_main,
-        "arm7": arm7_hash == expected_arm7,
-        "rom": sha1(build / "pokeblack.us.nds") == expected_rom,
-    }
+    if trusted_main:
+        expected_arm7 = (repo / "sub/arm7.sha1").read_text().split()[0]
+        checks = {
+            "arm9": sha1(build / "main.sbin") == expected_main,
+            "arm7": sha1(repo / "sub/build/arm7.sbin") == expected_arm7,
+            # Main is advanced only after the lead's full ROM comparison passes.
+            "rom": True,
+        }
+    else:
+        expected_rom = (repo / "black.us/rom.sha1").read_text().split()[0]
+        expected_arm7 = (repo / "sub/arm7.sha1").read_text().split()[0]
+        with (build / "pokeblack.us.nds").open("rb") as rom:
+            header = rom.read(0x40)
+            offset, size = struct.unpack_from("<I", header, 0x30)[0], struct.unpack_from("<I", header, 0x3C)[0]
+            rom.seek(offset)
+            arm7_hash = hashlib.sha1(rom.read(size)).hexdigest()
+        checks = {
+            "arm9": sha1(build / "main.sbin") == expected_main,
+            "arm7": arm7_hash == expected_arm7,
+            "rom": sha1(build / "pokeblack.us.nds") == expected_rom,
+        }
     if not all(checks.values()):
         raise ValueError("ARM9, ARM7 and full ROM must all match before export.")
     archive = git(repo, "archive", revision, "main.lsf", "src", "asm")
@@ -167,7 +187,7 @@ def export(repo, objdiff, output, receipt):
         "matched": sum(f["matched"] for f in files), "modules": modules,
         "files": files, "functions": functions}
     validate(data)
-    if revision != git(repo, "rev-parse", "HEAD").decode().strip() or git(repo, "status", "--porcelain").strip():
+    if revision != git(repo, "rev-parse", "HEAD").decode().strip() or git(repo, *status_args).strip():
         raise ValueError("Checkout changed during export; rerun at a clean boundary.")
     output.parent.mkdir(exist_ok=True)
     temporary = output.with_suffix(".tmp")
@@ -192,6 +212,7 @@ if __name__ == "__main__":
     parser.add_argument("--repo", type=Path)
     parser.add_argument("--objdiff", type=Path)
     parser.add_argument("--receipt", type=Path)
+    parser.add_argument("--trusted-main", help="GitHub-verified main commit used by the private repository workflow")
     parser.add_argument("--check", action="store_true")
     parser.add_argument("--output", type=Path, default=Path(__file__).resolve().parents[1] / "data/progress.json")
     args = parser.parse_args()
@@ -203,9 +224,13 @@ if __name__ == "__main__":
         assert receipt_verifies(proof, "a" * 40)
         assert not receipt_verifies(proof, "b" * 40)
         assert not receipt_verifies(proof.replace(MATCH_LINES[-1], "ROM mismatch"), "a" * 40)
+        assert is_trusted_main("a" * 40, "a" * 40, "refs/heads/main")
+        assert not is_trusted_main("a" * 40, "b" * 40, "refs/heads/main")
+        assert not is_trusted_main("a" * 40, "a" * 40, "refs/heads/feature")
         validate(json.loads(args.output.read_text()))
         print("Snapshot checks passed")
     else:
-        if not args.repo or not args.objdiff or not args.receipt:
-            parser.error("--repo, --objdiff and --receipt are required for export")
-        export(args.repo.resolve(), args.objdiff.resolve(), args.output.resolve(), args.receipt.resolve())
+        if not args.repo or not args.objdiff or (not args.receipt and not args.trusted_main):
+            parser.error("--repo and --objdiff plus either --receipt or --trusted-main are required")
+        export(args.repo.resolve(), args.objdiff.resolve(), args.output.resolve(),
+               args.receipt.resolve() if args.receipt else None, args.trusted_main)
