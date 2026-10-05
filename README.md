@@ -14,9 +14,9 @@ The main page uses a Pokémon Black 1 battle-menu theme with rectangular panels 
 
 ## Automatic progress updates
 
-GitHub Actions in the private decompilation repo runs on each push to `main`. It rebuilds ARM9 and ARM7, exports `data/progress.json`, and pushes only that snapshot to this public repo. GitHub Pages then deploys the updated site. No PC task or local updater is used.
+GitHub Actions in the private decompilation repo checks every push to `main` and limits automated full reports to one per 12 hours. Scheduled checks every six hours pick up commits pushed during the cooldown. The workflow exports `data/progress.json` and pushes only that snapshot to this public repo; GitHub Pages then deploys the updated site. No PC task or local updater is used.
 
-The private repo needs an Actions secret named `PROGRESS_SITE_TOKEN`. Use a fine-grained token that can access only `reflxay/pokeblack-progress`, with **Contents: read and write**, then add it under the private repo's **Settings → Secrets and variables → Actions**. The workflow keeps producing its private report artifact without this token, but it cannot publish the site until the secret is configured. Run the existing `report` workflow once from the Actions page after adding the secret to publish the current main revision; later pushes update the site automatically.
+The private repo needs an Actions secret named `PROGRESS_SITE_TOKEN`. Use a fine-grained token that can access only `reflxay/pokeblack-progress`, with **Contents: read and write**, then add it under the private repo's **Settings → Secrets and variables → Actions**. The workflow keeps producing its private report artifact without this token, but it cannot publish the site until the secret is configured. Run the existing `report` workflow once from the Actions page after adding the secret to publish the current main revision; later eligible pushes and scheduled checks update the site automatically.
 
 Each published revision is the exact private `main` commit. The main branch is advanced only after the lead's full ROM comparison; the Actions build also checks the ARM9 and ARM7 hashes before publishing. Only `data/progress.json` is copied to the public repo. It contains progress metadata, not source code or game assets.
 
