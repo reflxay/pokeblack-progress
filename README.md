@@ -2,8 +2,6 @@
 
 Public progress showcase for the private Pokémon Black matching decompilation. Plain HTML, CSS and JavaScript, hosted for free on GitHub Pages at https://reflxay.github.io/pokeblack-progress/.
 
-Inspired by [BFBB's progress site](https://bfbbdecomp.github.io/bfbb/). The layout and interface are original; no BFBB source or assets are copied. The main title uses Korataki Bold with vector outlines and metallic gradients inspired by Pokémon Black's logo.
-
 ## Preview
 
 ```sh
